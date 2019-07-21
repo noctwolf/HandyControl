@@ -333,7 +333,7 @@ namespace HandyControl.Controls
                 }
 
                 var list = new List<bool>();
-                for (int i = 0; i < 2; i++)
+                for (var i = 0; i < 2; i++)
                 {
                     list.Add(false);
                 }
@@ -478,7 +478,7 @@ namespace HandyControl.Controls
         /// </summary>
         private void UpdateStatus(Color color)
         {
-            if (_isOnDragging) return;
+            if (_isOnDragging || _sliderColor == null) return;
 
             var r = color.R;
             var g = color.G;

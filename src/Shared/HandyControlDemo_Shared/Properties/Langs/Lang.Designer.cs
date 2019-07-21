@@ -178,6 +178,15 @@ namespace HandyControlDemo.Properties.Langs {
         }
         
         /// <summary>
+        ///   查找类似 按钮组 的本地化字符串。
+        /// </summary>
+        public static string ButtonGroup {
+            get {
+                return ResourceManager.GetString("ButtonGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 日历 的本地化字符串。
         /// </summary>
         public static string Calendar {
@@ -192,6 +201,15 @@ namespace HandyControlDemo.Properties.Langs {
         public static string CalendarWithClock {
             get {
                 return ResourceManager.GetString("CalendarWithClock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 卡片 的本地化字符串。
+        /// </summary>
+        public static string Card {
+            get {
+                return ResourceManager.GetString("Card", resourceCulture);
             }
         }
         
@@ -673,6 +691,15 @@ namespace HandyControlDemo.Properties.Langs {
         }
         
         /// <summary>
+        ///   查找类似 图片块 的本地化字符串。
+        /// </summary>
+        public static string ImageBlock {
+            get {
+                return ResourceManager.GetString("ImageBlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 图片浏览器 的本地化字符串。
         /// </summary>
         public static string ImageBrowser {
@@ -754,6 +781,15 @@ namespace HandyControlDemo.Properties.Langs {
         }
         
         /// <summary>
+        ///   查找类似 放大镜 的本地化字符串。
+        /// </summary>
+        public static string Magnifier {
+            get {
+                return ResourceManager.GetString("Magnifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 菜单 的本地化字符串。
         /// </summary>
         public static string Menu {
@@ -817,11 +853,29 @@ namespace HandyControlDemo.Properties.Langs {
         }
         
         /// <summary>
+        ///   查找类似 关 的本地化字符串。
+        /// </summary>
+        public static string Off {
+            get {
+                return ResourceManager.GetString("Off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 确定 的本地化字符串。
         /// </summary>
         public static string Ok {
             get {
                 return ResourceManager.GetString("Ok", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 开 的本地化字符串。
+        /// </summary>
+        public static string On {
+            get {
+                return ResourceManager.GetString("On", resourceCulture);
             }
         }
         
@@ -1096,7 +1150,7 @@ namespace HandyControlDemo.Properties.Langs {
         }
         
         /// <summary>
-        ///   查找类似 推荐 的本地化字符串。
+        ///   查找类似 群友推荐 的本地化字符串。
         /// </summary>
         public static string Recommendation {
             get {
@@ -1371,6 +1425,15 @@ namespace HandyControlDemo.Properties.Langs {
         public static string TextDialog {
             get {
                 return ResourceManager.GetString("TextDialog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 文本对话框，带计时器 的本地化字符串。
+        /// </summary>
+        public static string TextDialogWithTimer {
+            get {
+                return ResourceManager.GetString("TextDialogWithTimer", resourceCulture);
             }
         }
         

@@ -72,6 +72,7 @@ namespace HandyControl.Controls
             CommandBindings.Add(new CommandBinding(ControlCommands.Prev, ButtonPrev_OnClick));
             CommandBindings.Add(new CommandBinding(ControlCommands.Next, ButtonNext_OnClick));
             CommandBindings.Add(new CommandBinding(ControlCommands.Selected, ToggleButton_OnChecked));
+            this.Show(MaxPageCount > 1);
         }
 
         #region Public Properties
@@ -82,7 +83,7 @@ namespace HandyControl.Controls
         ///     最大页数
         /// </summary>
         public static readonly DependencyProperty MaxPageCountProperty = DependencyProperty.Register(
-            "MaxPageCount", typeof(int), typeof(Pagination), new PropertyMetadata(1, (o, args) =>
+            "MaxPageCount", typeof(int), typeof(Pagination), new PropertyMetadata(ValueBoxes.Int1Box, (o, args) =>
             {
                 if (o is Pagination pagination && args.NewValue is int value)
                 {
@@ -156,7 +157,7 @@ namespace HandyControl.Controls
         ///     当前页
         /// </summary>
         public static readonly DependencyProperty PageIndexProperty = DependencyProperty.Register(
-            "PageIndex", typeof(int), typeof(Pagination), new PropertyMetadata(1, (o, args) =>
+            "PageIndex", typeof(int), typeof(Pagination), new PropertyMetadata(ValueBoxes.Int1Box, (o, args) =>
             {
                 if (o is Pagination pagination && args.NewValue is int value)
                 {
@@ -312,7 +313,7 @@ namespace HandyControl.Controls
             }
 
             var sub = PageIndex;
-            for (int i = 0; i < MaxPageInterval - 1; i++)
+            for (var i = 0; i < MaxPageInterval - 1; i++)
             {
                 if (--sub > 1)
                 {
@@ -324,7 +325,7 @@ namespace HandyControl.Controls
                 }
             }
             var add = PageIndex;
-            for (int i = 0; i < MaxPageInterval - 1; i++)
+            for (var i = 0; i < MaxPageInterval - 1; i++)
             {
                 if (++add < MaxPageCount)
                 {
