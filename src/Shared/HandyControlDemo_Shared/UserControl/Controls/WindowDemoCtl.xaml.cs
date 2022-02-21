@@ -4,7 +4,6 @@ using HandyControl.Data;
 using HandyControl.Tools;
 using MessageBox = HandyControl.Controls.MessageBox;
 
-
 namespace HandyControlDemo.UserControl
 {
     public partial class WindowDemoCtl
@@ -23,12 +22,12 @@ namespace HandyControlDemo.UserControl
         {
             MessageBox.Show(new MessageBoxInfo
             {
-                MessageBoxText = Properties.Langs.Lang.GrowlAsk,
+                Message = Properties.Langs.Lang.GrowlAsk,
                 Caption = Properties.Langs.Lang.Title,
                 Button = MessageBoxButton.YesNo,
                 IconBrushKey = ResourceToken.AccentBrush,
                 IconKey = ResourceToken.AskGeometry,
-                Style = ResourceHelper.GetResource<Style>("MessageBoxCustom")
+                StyleKey = "MessageBoxCustom"
             });
         }
 

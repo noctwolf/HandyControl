@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Windows;
-using CommonServiceLocator;
 using GalaSoft.MvvmLight.Ioc;
 using HandyControlDemo.Data;
 using HandyControlDemo.Service;
-using HandyControlDemo.ViewModel.Basic;
-using HandyControlDemo.ViewModel.Controls;
 
 namespace HandyControlDemo.ViewModel
 {
@@ -13,9 +10,8 @@ namespace HandyControlDemo.ViewModel
     {
         public ViewModelLocator()
         {
-            ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
-
             SimpleIoc.Default.Register<DataService>();
+            var dataService = SimpleIoc.Default.GetInstance<DataService>();
 
             SimpleIoc.Default.Register<MainViewModel>();
             SimpleIoc.Default.Register(() => new GrowlDemoViewModel(), "GrowlDemo");
@@ -23,9 +19,9 @@ namespace HandyControlDemo.ViewModel
             SimpleIoc.Default.Register<ImageBrowserDemoViewModel>();
             SimpleIoc.Default.Register<ComboBoxDemoViewModel>();
             SimpleIoc.Default.Register<WindowDemoViewModel>();
-            SimpleIoc.Default.Register(() => new ItemsDisplayViewModel(ServiceLocator.Current.GetInstance<DataService>().GetContributorDataList), "Contributors");
-            SimpleIoc.Default.Register(() => new ItemsDisplayViewModel(ServiceLocator.Current.GetInstance<DataService>().GetBlogDataList), "Blogs");
-            SimpleIoc.Default.Register(() => new ItemsDisplayViewModel(ServiceLocator.Current.GetInstance<DataService>().GetProjectDataList), "Projects");
+            SimpleIoc.Default.Register(() => new ItemsDisplayViewModel(dataService.GetBlogDataList), "Blogs");
+            SimpleIoc.Default.Register(() => new ItemsDisplayViewModel(dataService.GetProjectDataList), "Projects");
+            SimpleIoc.Default.Register(() => new ItemsDisplayViewModel(dataService.GetWebsiteDataList), "Websites");
             SimpleIoc.Default.Register<StepBarDemoViewModel>();
             SimpleIoc.Default.Register<PaginationDemoViewModel>();
             SimpleIoc.Default.Register<ChatBoxViewModel>();
@@ -37,58 +33,75 @@ namespace HandyControlDemo.ViewModel
             SimpleIoc.Default.Register<BadgeDemoViewModel>();
             SimpleIoc.Default.Register<SideMenuDemoViewModel>();
             SimpleIoc.Default.Register<TabControlDemoViewModel>();
-            SimpleIoc.Default.Register<NoUserViewModel>();
+            SimpleIoc.Default.Register<NonClientAreaViewModel>();
             SimpleIoc.Default.Register<CardDemoViewModel>();
+            SimpleIoc.Default.Register<SpriteDemoViewModel>();
+            SimpleIoc.Default.Register<NotificationDemoViewModel>();
+            SimpleIoc.Default.Register<SplitButtonDemoViewModel>();
+            SimpleIoc.Default.Register<TagDemoViewModel>();
+            SimpleIoc.Default.Register<AutoCompleteTextBoxDemoViewModel>();
         }
 
-        public static ViewModelLocator Instance => new Lazy<ViewModelLocator>(() =>
+        public static ViewModelLocator Instance = new Lazy<ViewModelLocator>(() =>
             Application.Current.TryFindResource("Locator") as ViewModelLocator).Value;
 
         #region Vm
 
-        public MainViewModel Main => ServiceLocator.Current.GetInstance<MainViewModel>();
+        public MainViewModel Main => SimpleIoc.Default.GetInstance<MainViewModel>();
 
-        public GrowlDemoViewModel GrowlDemo => ServiceLocator.Current.GetInstance<GrowlDemoViewModel>("GrowlDemo");
+        public GrowlDemoViewModel GrowlDemo => SimpleIoc.Default.GetInstance<GrowlDemoViewModel>("GrowlDemo");
 
-        public GrowlDemoViewModel GrowlDemoWithToken => ServiceLocator.Current.GetInstance<GrowlDemoViewModel>("GrowlDemoWithToken");
+        public GrowlDemoViewModel GrowlDemoWithToken => SimpleIoc.Default.GetInstance<GrowlDemoViewModel>("GrowlDemoWithToken");
 
-        public ImageBrowserDemoViewModel ImageBrowserDemo => ServiceLocator.Current.GetInstance<ImageBrowserDemoViewModel>();
+        public ImageBrowserDemoViewModel ImageBrowserDemo => SimpleIoc.Default.GetInstance<ImageBrowserDemoViewModel>();
 
-        public ComboBoxDemoViewModel ComboBoxDemo => ServiceLocator.Current.GetInstance<ComboBoxDemoViewModel>();
+        public ComboBoxDemoViewModel ComboBoxDemo => SimpleIoc.Default.GetInstance<ComboBoxDemoViewModel>();
 
-        public WindowDemoViewModel WindowDemo => ServiceLocator.Current.GetInstance<WindowDemoViewModel>();
+        public WindowDemoViewModel WindowDemo => SimpleIoc.Default.GetInstance<WindowDemoViewModel>();
 
-        public ItemsDisplayViewModel ContributorsView => ServiceLocator.Current.GetInstance<ItemsDisplayViewModel>("Contributors");
+        public ItemsDisplayViewModel ContributorsView => new(SimpleIoc.Default.GetInstance<DataService>().GetContributorDataList);
 
-        public ItemsDisplayViewModel BlogsView => ServiceLocator.Current.GetInstance<ItemsDisplayViewModel>("Blogs");
+        public ItemsDisplayViewModel BlogsView => SimpleIoc.Default.GetInstance<ItemsDisplayViewModel>("Blogs");
 
-        public ItemsDisplayViewModel ProjectsView => ServiceLocator.Current.GetInstance<ItemsDisplayViewModel>("Projects");
+        public ItemsDisplayViewModel ProjectsView => SimpleIoc.Default.GetInstance<ItemsDisplayViewModel>("Projects");
 
-        public StepBarDemoViewModel StepBarDemo => ServiceLocator.Current.GetInstance<StepBarDemoViewModel>();
+        public ItemsDisplayViewModel WebsitesView => SimpleIoc.Default.GetInstance<ItemsDisplayViewModel>("Websites");
 
-        public PaginationDemoViewModel PaginationDemo => ServiceLocator.Current.GetInstance<PaginationDemoViewModel>();
+        public StepBarDemoViewModel StepBarDemo => SimpleIoc.Default.GetInstance<StepBarDemoViewModel>();
 
-        public ChatBoxViewModel ChatBox => new ChatBoxViewModel();
+        public PaginationDemoViewModel PaginationDemo => SimpleIoc.Default.GetInstance<PaginationDemoViewModel>();
 
-        public CoverViewModel CoverView => ServiceLocator.Current.GetInstance<CoverViewModel>();
+        public ChatBoxViewModel ChatBox => new();
 
-        public DialogDemoViewModel DialogDemo => ServiceLocator.Current.GetInstance<DialogDemoViewModel>();
+        public CoverViewModel CoverView => SimpleIoc.Default.GetInstance<CoverViewModel>();
 
-        public SearchBarDemoViewModel SearchBarDemo => ServiceLocator.Current.GetInstance<SearchBarDemoViewModel>();
+        public DialogDemoViewModel DialogDemo => SimpleIoc.Default.GetInstance<DialogDemoViewModel>();
 
-        public NotifyIconDemoViewModel NotifyIconDemo => ServiceLocator.Current.GetInstance<NotifyIconDemoViewModel>();
+        public SearchBarDemoViewModel SearchBarDemo => SimpleIoc.Default.GetInstance<SearchBarDemoViewModel>();
 
-        public InteractiveDialogViewModel InteractiveDialog => ServiceLocator.Current.GetInstance<InteractiveDialogViewModel>();
+        public NotifyIconDemoViewModel NotifyIconDemo => SimpleIoc.Default.GetInstance<NotifyIconDemoViewModel>();
 
-        public BadgeDemoViewModel BadgeDemo => ServiceLocator.Current.GetInstance<BadgeDemoViewModel>();
+        public InteractiveDialogViewModel InteractiveDialog => SimpleIoc.Default.GetInstance<InteractiveDialogViewModel>();
 
-        public SideMenuDemoViewModel SideMenuDemo => ServiceLocator.Current.GetInstance<SideMenuDemoViewModel>();
+        public BadgeDemoViewModel BadgeDemo => SimpleIoc.Default.GetInstance<BadgeDemoViewModel>();
 
-        public TabControlDemoViewModel TabControlDemo => ServiceLocator.Current.GetInstance<TabControlDemoViewModel>();
+        public SideMenuDemoViewModel SideMenuDemo => SimpleIoc.Default.GetInstance<SideMenuDemoViewModel>();
 
-        public NoUserViewModel NoUser => ServiceLocator.Current.GetInstance<NoUserViewModel>();
+        public TabControlDemoViewModel TabControlDemo => new(SimpleIoc.Default.GetInstance<DataService>());
 
-        public CardDemoViewModel CardDemo => ServiceLocator.Current.GetInstance<CardDemoViewModel>();
+        public NonClientAreaViewModel NoUser => SimpleIoc.Default.GetInstance<NonClientAreaViewModel>();
+
+        public CardDemoViewModel CardDemo => new(SimpleIoc.Default.GetInstance<DataService>());
+
+        public SpriteDemoViewModel SpriteDemo => SimpleIoc.Default.GetInstance<SpriteDemoViewModel>();
+
+        public NotificationDemoViewModel NotificationDemo => SimpleIoc.Default.GetInstance<NotificationDemoViewModel>();
+
+        public SplitButtonDemoViewModel SplitButtonDemo => SimpleIoc.Default.GetInstance<SplitButtonDemoViewModel>();
+
+        public TagDemoViewModel TagDemo => new(SimpleIoc.Default.GetInstance<DataService>());
+
+        public AutoCompleteTextBoxDemoViewModel AutoCompleteTextBoxDemo => new(SimpleIoc.Default.GetInstance<DataService>());
 
         #endregion
     }

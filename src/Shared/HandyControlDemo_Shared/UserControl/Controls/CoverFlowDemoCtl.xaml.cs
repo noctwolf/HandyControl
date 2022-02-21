@@ -8,7 +8,7 @@ namespace HandyControlDemo.UserControl
         {
             InitializeComponent();
 
-            CoverFlowMain.AddRange(new []
+            CoverFlowMain.AddRange(new[]
             {
                 new Uri(@"pack://application:,,,/Resources/Img/Album/1.jpg"),
                 new Uri(@"pack://application:,,,/Resources/Img/Album/2.jpg"),
@@ -21,7 +21,8 @@ namespace HandyControlDemo.UserControl
                 new Uri(@"pack://application:,,,/Resources/Img/Album/9.jpg"),
                 new Uri(@"pack://application:,,,/Resources/Img/Album/10.jpg")
             });
-            CoverFlowMain.JumpTo(2);
+
+            CoverFlowMain.PageIndex = 2;
         }
     }
 }

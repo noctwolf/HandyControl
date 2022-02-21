@@ -1,17 +1,12 @@
-﻿using System;
-using System.Windows;
-#if netle40
+﻿using System.Windows;
 using GalaSoft.MvvmLight.Command;
-#else
-using GalaSoft.MvvmLight.CommandWpf;
-# endif
 using HandyControlDemo.Tools;
 
 namespace HandyControlDemo.ViewModel
 {
     public class WindowDemoViewModel
     {
-        public RelayCommand<string> OpenWindowCmd => new Lazy<RelayCommand<string>>(() => new RelayCommand<string>(OpenWindow)).Value;
+        public RelayCommand<string> OpenWindowCmd => new(OpenWindow);
 
         private void OpenWindow(string windowTag)
         {

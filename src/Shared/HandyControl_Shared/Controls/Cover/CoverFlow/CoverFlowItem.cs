@@ -72,12 +72,12 @@ namespace HandyControl.Controls
 
             var textureCoordinates = new PointCollection
             {
-                new Point(0, 1),
-                new Point(1, 1),
-                new Point(1, 0),
-                new Point(0, 0),
-                new Point(1, 0),
-                new Point(1, 1)
+                new(0, 1),
+                new(1, 1),
+                new(1, 0),
+                new(0, 0),
+                new(1, 0),
+                new(1, 1)
             };
 
             var normals = new Vector3DCollection
@@ -124,23 +124,14 @@ namespace HandyControl.Controls
         /// <summary>
         ///     移动
         /// </summary>
-        internal void Move(int currentIndex, bool animated)
+        internal void Move(int currentIndex)
         {
-            if (animated || _rotation3D.HasAnimatedProperties)
-            {
-                _rotation3D.BeginAnimation(AxisAngleRotation3D.AngleProperty,
-                    AnimationHelper.CreateAnimation(GetAngleByPos(currentIndex), AnimationSpeed));
-                _transform3D.BeginAnimation(TranslateTransform3D.OffsetXProperty,
-                    AnimationHelper.CreateAnimation(GetXByPos(currentIndex), AnimationSpeed));
-                _transform3D.BeginAnimation(TranslateTransform3D.OffsetZProperty,
-                    AnimationHelper.CreateAnimation(GetZByPos(currentIndex), AnimationSpeed));
-            }
-            else
-            {
-                _rotation3D.Angle = GetAngleByPos(currentIndex);
-                _transform3D.OffsetX = GetXByPos(currentIndex);
-                _transform3D.OffsetZ = GetZByPos(currentIndex);
-            }
+            _rotation3D.BeginAnimation(AxisAngleRotation3D.AngleProperty,
+                AnimationHelper.CreateAnimation(GetAngleByPos(currentIndex), AnimationSpeed));
+            _transform3D.BeginAnimation(TranslateTransform3D.OffsetXProperty,
+                AnimationHelper.CreateAnimation(GetXByPos(currentIndex), AnimationSpeed));
+            _transform3D.BeginAnimation(TranslateTransform3D.OffsetZProperty,
+                AnimationHelper.CreateAnimation(GetZByPos(currentIndex), AnimationSpeed));
         }
 
         /// <summary>

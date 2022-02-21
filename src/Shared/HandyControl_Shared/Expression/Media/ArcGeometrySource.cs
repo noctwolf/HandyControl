@@ -156,7 +156,7 @@ namespace HandyControl.Expression.Media
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static Size GetArcSize(Rect bound)
         {
-            return new Size(bound.Width / 2.0, bound.Height / 2.0);
+            return new(bound.Width / 2.0, bound.Height / 2.0);
         }
 
         private static void IncreaseDuplicatedIndex(IList<double> values, ref int index)
@@ -339,7 +339,7 @@ namespace HandyControl.Expression.Media
                 figure = new PathFigure();
                 CachedGeometry = new PathGeometry
                 {
-                    Figures = {figure}
+                    Figures = { figure }
                 };
                 figure.Segments.Add(segment = new ArcSegment());
                 figure.IsClosed = false;
@@ -371,7 +371,7 @@ namespace HandyControl.Expression.Media
                 figure = new PathFigure();
                 CachedGeometry = new PathGeometry
                 {
-                    Figures = {figure}
+                    Figures = { figure }
                 };
                 figure.Segments.Add(segment = new ArcSegment());
                 figure.Segments.Add(segment2 = new LineSegment());

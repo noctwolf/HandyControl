@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using HandyControl.Data;
 using HandyControl.Interactivity;
 using HandyControl.Properties.Langs;
@@ -47,7 +48,7 @@ namespace HandyControl.Controls
         /// <summary>
         ///     图片保存对话框
         /// </summary>
-        private static readonly SaveFileDialog SaveFileDialog = new SaveFileDialog
+        private static readonly SaveFileDialog SaveFileDialog = new()
         {
             Filter = $"{Lang.PngImg}|*.png"
         };
@@ -157,6 +158,10 @@ namespace HandyControl.Controls
         /// </summary>
         private bool _showBorderBottom;
 
+        private DispatcherTimer _dispatcher;
+
+        private bool _isLoaded;
+
         #endregion Data
 
         #region ctor
@@ -171,7 +176,11 @@ namespace HandyControl.Controls
             CommandBindings.Add(new CommandBinding(ControlCommands.RotateLeft, ButtonRotateLeft_OnClick));
             CommandBindings.Add(new CommandBinding(ControlCommands.RotateRight, ButtonRotateRight_OnClick));
 
-            Loaded += (s, e) => Init();
+            Loaded += (s, e) =>
+            {
+                _isLoaded = true;
+                Init();
+            };
         }
 
         /// <summary>
@@ -267,19 +276,19 @@ namespace HandyControl.Controls
 
         public bool IsFullScreen
         {
-            get => (bool)GetValue(IsFullScreenProperty);
-            set => SetValue(IsFullScreenProperty, value);
+            get => (bool) GetValue(IsFullScreenProperty);
+            set => SetValue(IsFullScreenProperty, ValueBoxes.BooleanBox(value));
         }
 
         public bool ShowImgMap
         {
-            get => (bool)GetValue(ShowImgMapProperty);
-            set => SetValue(ShowImgMapProperty, value);
+            get => (bool) GetValue(ShowImgMapProperty);
+            set => SetValue(ShowImgMapProperty, ValueBoxes.BooleanBox(value));
         }
 
         public BitmapFrame ImageSource
         {
-            get => (BitmapFrame)GetValue(ImageSourceProperty);
+            get => (BitmapFrame) GetValue(ImageSourceProperty);
             set => SetValue(ImageSourceProperty, value);
         }
 
@@ -291,13 +300,13 @@ namespace HandyControl.Controls
 
         internal string ImgPath
         {
-            get => (string)GetValue(ImgPathProperty);
+            get => (string) GetValue(ImgPathProperty);
             set => SetValue(ImgPathProperty, value);
         }
 
         internal long ImgSize
         {
-            get => (long)GetValue(ImgSizeProperty);
+            get => (long) GetValue(ImgSizeProperty);
             set => SetValue(ImgSizeProperty, value);
         }
 
@@ -306,50 +315,50 @@ namespace HandyControl.Controls
         /// </summary>
         internal bool ShowFullScreenButton
         {
-            get => (bool)GetValue(ShowFullScreenButtonProperty);
-            set => SetValue(ShowFullScreenButtonProperty, value);
+            get => (bool) GetValue(ShowFullScreenButtonProperty);
+            set => SetValue(ShowFullScreenButtonProperty, ValueBoxes.BooleanBox(value));
         }
 
         internal Thickness ImageMargin
         {
-            get => (Thickness)GetValue(ImageMarginProperty);
+            get => (Thickness) GetValue(ImageMarginProperty);
             set => SetValue(ImageMarginProperty, value);
         }
 
         internal double ImageWidth
         {
-            get => (double)GetValue(ImageWidthProperty);
+            get => (double) GetValue(ImageWidthProperty);
             set => SetValue(ImageWidthProperty, value);
         }
 
         internal double ImageHeight
         {
-            get => (double)GetValue(ImageHeightProperty);
+            get => (double) GetValue(ImageHeightProperty);
             set => SetValue(ImageHeightProperty, value);
         }
 
         internal double ImageScale
         {
-            get => (double)GetValue(ImageScaleProperty);
+            get => (double) GetValue(ImageScaleProperty);
             set => SetValue(ImageScaleProperty, value);
         }
 
         internal string ScaleStr
         {
-            get => (string)GetValue(ScaleStrProperty);
+            get => (string) GetValue(ScaleStrProperty);
             set => SetValue(ScaleStrProperty, value);
         }
 
         internal double ImageRotate
         {
-            get => (double)GetValue(ImageRotateProperty);
+            get => (double) GetValue(ImageRotateProperty);
             set => SetValue(ImageRotateProperty, value);
         }
 
         internal bool ShowSmallImgInternal
         {
-            get => (bool)GetValue(ShowSmallImgInternalProperty);
-            set => SetValue(ShowSmallImgInternalProperty, value);
+            get => (bool) GetValue(ShowSmallImgInternalProperty);
+            set => SetValue(ShowSmallImgInternalProperty, ValueBoxes.BooleanBox(value));
         }
 
         /// <summary>
@@ -367,8 +376,8 @@ namespace HandyControl.Controls
         /// </summary>
         internal bool ShowCloseButton
         {
-            get => (bool)GetValue(ShowCloseButtonProperty);
-            set => SetValue(ShowCloseButtonProperty, value);
+            get => (bool) GetValue(ShowCloseButtonProperty);
+            set => SetValue(ShowCloseButtonProperty, ValueBoxes.BooleanBox(value));
         }
 
         /// <summary>
@@ -442,20 +451,32 @@ namespace HandyControl.Controls
         /// </summary>
         private void Init()
         {
-            if (ImageSource == null || !IsLoaded) return;
+            if (ImageSource == null || !_isLoaded) return;
+
+            if (ImageSource.IsDownloading)
+            {
+                _dispatcher = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
+                {
+                    Interval = TimeSpan.FromSeconds(1)
+                };
+                _dispatcher.Tick += Dispatcher_Tick;
+                _dispatcher.Start();
+
+                return;
+            }
 
             double width;
             double height;
 
             if (!_isOblique)
             {
-                width = ImageSource.Width;
-                height = ImageSource.Height;
+                width = ImageSource.PixelWidth;
+                height = ImageSource.PixelHeight;
             }
             else
             {
-                width = ImageSource.Height;
-                height = ImageSource.Width;
+                width = ImageSource.PixelHeight;
+                height = ImageSource.PixelWidth;
             }
 
             ImageWidth = width;
@@ -493,6 +514,27 @@ namespace HandyControl.Controls
             _imgActualMargin = ImageMargin;
 
             InitBorderSmall();
+        }
+
+        private void Dispatcher_Tick(object sender, EventArgs e)
+        {
+            if (_dispatcher == null) return;
+
+            if (ImageSource == null || !_isLoaded)
+            {
+                _dispatcher.Stop();
+                _dispatcher.Tick -= Dispatcher_Tick;
+                _dispatcher = null;
+                return;
+            }
+
+            if (!ImageSource.IsDownloading)
+            {
+                _dispatcher.Stop();
+                _dispatcher.Tick -= Dispatcher_Tick;
+                _dispatcher = null;
+                Init();
+            }
         }
 
         private void ButtonActual_OnClick(object sender, RoutedEventArgs e)
@@ -775,7 +817,7 @@ namespace HandyControl.Controls
         {
             _imgActualRotate = rotate;
 
-            _isOblique = ((int)_imgActualRotate - 90) % 180 == 0;
+            _isOblique = ((int) _imgActualRotate - 90) % 180 == 0;
             ShowSmallImgInternal = false;
             Init();
             InitBorderSmall();

@@ -26,8 +26,6 @@ namespace HandyControl.Controls
 
         private double Density { get; set; } = double.NaN;
 
-        private double ThumbStartCenterOffset { get; set; } = double.NaN;
-
         public RepeatButton DecreaseRepeatButton
         {
             get => _decreaseButton;
@@ -153,7 +151,7 @@ namespace HandyControl.Controls
         }
 
         public static readonly DependencyProperty ValueEndProperty = DependencyProperty.Register(
-            "ValueEnd", typeof(double), typeof(RangeTrack), 
+            "ValueEnd", typeof(double), typeof(RangeTrack),
             new FrameworkPropertyMetadata(ValueBoxes.Double0Box,
                 FrameworkPropertyMetadataOptions.BindsTwoWayByDefault |
                 FrameworkPropertyMetadataOptions.AffectsArrange));
@@ -170,7 +168,7 @@ namespace HandyControl.Controls
         public bool IsDirectionReversed
         {
             get => (bool) GetValue(IsDirectionReversedProperty);
-            set => SetValue(IsDirectionReversedProperty, value);
+            set => SetValue(IsDirectionReversedProperty, ValueBoxes.BooleanBox(value));
         }
 
         protected override Visual GetVisualChild(int index)
@@ -257,13 +255,12 @@ namespace HandyControl.Controls
                     : increaseButtonLength + thumbStartLength + centerButtonLength;
                 pieceSize.Height = thumbStartLength;
 
-                ThumbStart?.Arrange(new Rect(offset, pieceSize));
-                ThumbStartCenterOffset = offset.Y + thumbStartLength * 0.5;
+                ArrangeThumb(isDirectionReversed, false, offset, pieceSize);
 
                 offset.Y = isDirectionReversed ? decreaseButtonLength : increaseButtonLength;
                 pieceSize.Height = thumbEndLength;
 
-                ThumbEnd?.Arrange(new Rect(offset, pieceSize));
+                ArrangeThumb(isDirectionReversed, true, offset, pieceSize);
             }
             else
             {
@@ -291,18 +288,43 @@ namespace HandyControl.Controls
                 offset.X = isDirectionReversed ? increaseButtonLength : decreaseButtonLength;
                 pieceSize.Width = thumbStartLength;
 
-                ThumbStart?.Arrange(new Rect(offset, pieceSize));
-                ThumbStartCenterOffset = offset.X + thumbStartLength * 0.5;
+                ArrangeThumb(isDirectionReversed, false, offset, pieceSize);
 
                 offset.X = isDirectionReversed
                     ? increaseButtonLength + thumbStartLength + centerButtonLength
                     : decreaseButtonLength + thumbEndLength + centerButtonLength;
                 pieceSize.Width = thumbEndLength;
 
-                ThumbEnd?.Arrange(new Rect(offset, pieceSize));
+                ArrangeThumb(isDirectionReversed, true, offset, pieceSize);
             }
 
             return arrangeSize;
+        }
+
+        private void ArrangeThumb(bool isDirectionReversed, bool isStart, Point offset, Size pieceSize)
+        {
+            if (isStart)
+            {
+                if (isDirectionReversed)
+                {
+                    ThumbStart?.Arrange(new Rect(offset, pieceSize));
+                }
+                else
+                {
+                    ThumbEnd?.Arrange(new Rect(offset, pieceSize));
+                }
+            }
+            else
+            {
+                if (isDirectionReversed)
+                {
+                    ThumbEnd?.Arrange(new Rect(offset, pieceSize));
+                }
+                else
+                {
+                    ThumbStart?.Arrange(new Rect(offset, pieceSize));
+                }
+            }
         }
 
         private void ComputeLengths(Size arrangeSize, bool isVertical, out double decreaseButtonLength,
@@ -310,7 +332,7 @@ namespace HandyControl.Controls
             out double thumbEndLength)
         {
             var min = Minimum;
-            var range = Math.Max(0.0, Maximum - min);            
+            var range = Math.Max(0.0, Maximum - min);
             var offsetStart = Math.Min(range, ValueStart - min);
             var offsetEnd = Math.Min(range, ValueEnd - min);
 
@@ -364,7 +386,7 @@ namespace HandyControl.Controls
 
         private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue)
+            if ((bool) e.NewValue)
             {
                 Mouse.Synchronize();
             }
@@ -372,17 +394,13 @@ namespace HandyControl.Controls
 
         public virtual double ValueFromPoint(Point pt)
         {
-            double val;
-            // Find distance from center of thumb to given point.
-            if (Orientation == Orientation.Horizontal)
-            {
-                val = ValueStart + ValueFromDistance(pt.X - ThumbStartCenterOffset, pt.Y - RenderSize.Height * 0.5);
-            }
-            else
-            {
-                val = ValueStart + ValueFromDistance(pt.X - RenderSize.Width * 0.5, pt.Y - ThumbStartCenterOffset);
-            }
-            return Math.Max(Minimum, Math.Min(Maximum, val));
+            return Orientation == Orientation.Horizontal
+                ? !IsDirectionReversed
+                    ? pt.X / RenderSize.Width * Maximum
+                    : (1 - pt.X / RenderSize.Width) * Maximum
+                : !IsDirectionReversed
+                    ? pt.Y / RenderSize.Height * Maximum
+                    : (1 - pt.X / RenderSize.Height) * Maximum;
         }
 
         public virtual double ValueFromDistance(double horizontal, double vertical)
@@ -397,10 +415,7 @@ namespace HandyControl.Controls
         {
             if (oldValue != newValue)
             {
-                if (_visualChildren == null)
-                {
-                    _visualChildren = new Visual[5];
-                }
+                _visualChildren ??= new Visual[5];
 
                 if (oldValue != null)
                 {

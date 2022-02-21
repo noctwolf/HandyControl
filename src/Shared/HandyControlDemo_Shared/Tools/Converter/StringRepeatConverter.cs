@@ -20,7 +20,7 @@ namespace HandyControlDemo.Tools.Converter
                         return strValue;
                     }
                 }
-                else if(parameter is int intValue)
+                else if (parameter is int intValue)
                 {
                     num = intValue;
                 }
@@ -39,7 +39,7 @@ namespace HandyControlDemo.Tools.Converter
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

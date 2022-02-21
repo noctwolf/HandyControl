@@ -16,7 +16,7 @@ namespace HandyControl.Controls
 
         private IEnumerable _itemsSourceInternal;
 
-        private readonly Dictionary<object, CoverViewItem> _entryDic = new Dictionary<object, CoverViewItem>();
+        private readonly Dictionary<object, CoverViewItem> _entryDic = new();
 
         private bool _isRefresh;
 
@@ -76,10 +76,7 @@ namespace HandyControl.Controls
         {
             base.OnApplyTemplate();
 
-            if (_viewContent.Style == null)
-            {
-                _viewContent.Style = CoverViewContentStyle;
-            }
+            _viewContent.Style ??= CoverViewContentStyle;
 
             if (_selectedItem != null)
             {
@@ -104,7 +101,7 @@ namespace HandyControl.Controls
 
         public Style CoverViewContentStyle
         {
-            get => (Style)GetValue(CoverViewContentStyleProperty);
+            get => (Style) GetValue(CoverViewContentStyleProperty);
             set => SetValue(CoverViewContentStyleProperty, value);
         }
 
@@ -123,13 +120,13 @@ namespace HandyControl.Controls
 
         private static bool IsGroupsValid(object value)
         {
-            var v = (int)value;
+            var v = (int) value;
             return v >= 1;
         }
 
         public int Groups
         {
-            get => (int)GetValue(GroupsProperty);
+            get => (int) GetValue(GroupsProperty);
             set => SetValue(GroupsProperty, value);
         }
 
@@ -139,7 +136,7 @@ namespace HandyControl.Controls
 
         public double ItemContentHeight
         {
-            get => (double)GetValue(ItemContentHeightProperty);
+            get => (double) GetValue(ItemContentHeightProperty);
             set => SetValue(ItemContentHeightProperty, value);
         }
 
@@ -148,8 +145,8 @@ namespace HandyControl.Controls
 
         public bool ItemContentHeightFixed
         {
-            get => (bool)GetValue(ItemContentHeightFixedProperty);
-            set => SetValue(ItemContentHeightFixedProperty, value);
+            get => (bool) GetValue(ItemContentHeightFixedProperty);
+            set => SetValue(ItemContentHeightFixedProperty, ValueBoxes.BooleanBox(value));
         }
 
         public static readonly DependencyProperty ItemHeaderTemplateProperty = DependencyProperty.Register(
@@ -165,7 +162,7 @@ namespace HandyControl.Controls
         {
             base.OnRenderSizeChanged(sizeInfo);
 
-            Groups = (int)(sizeInfo.NewSize.Width / (ItemWidth + ItemMargin.Left + ItemMargin.Right));
+            Groups = (int) (sizeInfo.NewSize.Width / (ItemWidth + ItemMargin.Left + ItemMargin.Right));
         }
 
         protected override void Refresh()
@@ -181,9 +178,7 @@ namespace HandyControl.Controls
             }
 
             _isRefresh = false;
-
             GenerateIndex();
-
             UpdateCoverViewContent(_viewContent.IsOpen);
         }
 
@@ -223,7 +218,7 @@ namespace HandyControl.Controls
             {
                 ItemsHost.Children.Remove(_viewContent);
             }
-            var total = Items.Count + 1;
+            var total = _entryDic.Count + 1;
             var totalRow = total / Groups + (total % Groups > 0 ? 1 : 0);
             if (total <= Groups)
             {
@@ -338,10 +333,7 @@ namespace HandyControl.Controls
                 {
                     SetBindingForItem(element);
                     element.Style = ItemContainerStyle;
-                    if (element.Header == null)
-                    {
-                        element.Header = item;
-                    }
+                    element.Header ??= item;
                     _entryDic[item] = element;
                     ItemsHost.Children.Insert(index, element);
 
@@ -359,9 +351,9 @@ namespace HandyControl.Controls
         private void GenerateIndex()
         {
             var index = 0;
-            foreach (var item in Items)
+            foreach (var item in _entryDic.Values)
             {
-                _entryDic[item].Index = index++;
+                item.Index = index++;
             }
         }
 

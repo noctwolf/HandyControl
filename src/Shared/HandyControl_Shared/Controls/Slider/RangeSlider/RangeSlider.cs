@@ -18,7 +18,7 @@ namespace HandyControl.Controls
     [TemplatePart(Name = ElementTrack, Type = typeof(Track))]
     public class RangeSlider : TwoWayRangeBase
     {
-        private const string ElementTrack= "PART_Track";
+        private const string ElementTrack = "PART_Track";
 
         private RangeTrack _track;
 
@@ -78,15 +78,15 @@ namespace HandyControl.Controls
 
         protected virtual void OnIncreaseLarge() => MoveToNextTick(LargeChange, false);
 
-        protected virtual void OnIncreaseSmall() => MoveToNextTick(LargeChange, false);
+        protected virtual void OnIncreaseSmall() => MoveToNextTick(SmallChange, false);
 
         protected virtual void OnDecreaseLarge() => MoveToNextTick(-LargeChange, true);
 
-        protected virtual void OnDecreaseSmall() => MoveToNextTick(-LargeChange, true);
+        protected virtual void OnDecreaseSmall() => MoveToNextTick(-SmallChange, true);
 
         protected virtual void OnCenterLarge(object parameter) => MoveToNextTick(LargeChange, false, true);
 
-        protected virtual void OnCenterSmall(object parameter) => MoveToNextTick(LargeChange, false, true);
+        protected virtual void OnCenterSmall(object parameter) => MoveToNextTick(SmallChange, false, true);
 
         public static RoutedCommand IncreaseLarge { get; private set; }
 
@@ -136,7 +136,7 @@ namespace HandyControl.Controls
 
         public Orientation Orientation
         {
-            get => (Orientation)GetValue(OrientationProperty);
+            get => (Orientation) GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
         }
 
@@ -145,15 +145,15 @@ namespace HandyControl.Controls
 
         public bool IsDirectionReversed
         {
-            get => (bool)GetValue(IsDirectionReversedProperty);
-            set => SetValue(IsDirectionReversedProperty, value);
+            get => (bool) GetValue(IsDirectionReversedProperty);
+            set => SetValue(IsDirectionReversedProperty, ValueBoxes.BooleanBox(value));
         }
 
         public static readonly DependencyProperty DelayProperty = RepeatButton.DelayProperty.AddOwner(typeof(RangeSlider), new FrameworkPropertyMetadata(GetKeyboardDelay()));
 
         public int Delay
         {
-            get => (int)GetValue(DelayProperty);
+            get => (int) GetValue(DelayProperty);
             set => SetValue(DelayProperty, value);
         }
 
@@ -169,7 +169,7 @@ namespace HandyControl.Controls
 
         public int Interval
         {
-            get => (int)GetValue(IntervalProperty);
+            get => (int) GetValue(IntervalProperty);
             set => SetValue(IntervalProperty, value);
         }
 
@@ -186,7 +186,7 @@ namespace HandyControl.Controls
 
         public AutoToolTipPlacement AutoToolTipPlacement
         {
-            get => (AutoToolTipPlacement)GetValue(AutoToolTipPlacementProperty);
+            get => (AutoToolTipPlacement) GetValue(AutoToolTipPlacementProperty);
             set => SetValue(AutoToolTipPlacementProperty, value);
         }
 
@@ -196,7 +196,7 @@ namespace HandyControl.Controls
 
         public int AutoToolTipPrecision
         {
-            get => (int)GetValue(AutoToolTipPrecisionProperty);
+            get => (int) GetValue(AutoToolTipPrecisionProperty);
             set => SetValue(AutoToolTipPrecisionProperty, value);
         }
 
@@ -205,8 +205,8 @@ namespace HandyControl.Controls
 
         public bool IsSnapToTickEnabled
         {
-            get => (bool)GetValue(IsSnapToTickEnabledProperty);
-            set => SetValue(IsSnapToTickEnabledProperty, value);
+            get => (bool) GetValue(IsSnapToTickEnabledProperty);
+            set => SetValue(IsSnapToTickEnabledProperty, ValueBoxes.BooleanBox(value));
         }
 
         public static readonly DependencyProperty TickPlacementProperty = DependencyProperty.Register(
@@ -214,7 +214,7 @@ namespace HandyControl.Controls
 
         public TickPlacement TickPlacement
         {
-            get => (TickPlacement)GetValue(TickPlacementProperty);
+            get => (TickPlacement) GetValue(TickPlacementProperty);
             set => SetValue(TickPlacementProperty, value);
         }
 
@@ -224,7 +224,7 @@ namespace HandyControl.Controls
 
         public double TickFrequency
         {
-            get => (double)GetValue(TickFrequencyProperty);
+            get => (double) GetValue(TickFrequencyProperty);
             set => SetValue(TickFrequencyProperty, value);
         }
 
@@ -233,7 +233,7 @@ namespace HandyControl.Controls
 
         public DoubleCollection Ticks
         {
-            get => (DoubleCollection)GetValue(TicksProperty);
+            get => (DoubleCollection) GetValue(TicksProperty);
             set => SetValue(TicksProperty, value);
         }
 
@@ -242,13 +242,13 @@ namespace HandyControl.Controls
 
         public bool IsMoveToPointEnabled
         {
-            get => (bool)GetValue(IsMoveToPointEnabledProperty);
-            set => SetValue(IsMoveToPointEnabledProperty, value);
+            get => (bool) GetValue(IsMoveToPointEnabledProperty);
+            set => SetValue(IsMoveToPointEnabledProperty, ValueBoxes.BooleanBox(value));
         }
 
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (IsMoveToPointEnabled && _track.ThumbStart != null && !_track.ThumbStart.IsMouseOver && _track.ThumbEnd != null && !_track.ThumbEnd.IsMouseOver)
+            if (IsMoveToPointEnabled && _track.ThumbStart is { IsMouseOver: false } && _track.ThumbEnd is { IsMouseOver: false })
             {
                 // Here we need to determine whether it's closer to the starting point or the end point. 
                 var pt = e.MouseDevice.GetPosition(_track);
@@ -271,15 +271,10 @@ namespace HandyControl.Controls
                     var newValue = _track.ValueFromPoint(pt);
                     if (ValidateHelper.IsInRangeOfDouble(newValue))
                     {
-                        var dir = (ValueStart + ValueEnd) / 2 > newValue;
-                        if (!dir)
+                        isStart = (ValueStart + ValueEnd) / 2 > newValue;
+                        if (!isStart)
                         {
-                            isStart = false;
                             direction = -Math.Abs(direction);
-                        }
-                        else
-                        {
-                            isStart = true;
                         }
                     }
                 }
@@ -295,13 +290,13 @@ namespace HandyControl.Controls
             var greaterThan = direction > 0;
 
             // If the snapping brought us back to value, find the next tick point
-            if (MathHelper.AreClose(next, value) && 
+            if (MathHelper.AreClose(next, value) &&
                 !(greaterThan && MathHelper.AreClose(value, Maximum)) &&
                 !(!greaterThan && MathHelper.AreClose(value, Minimum)))
             {
                 // If ticks collection is available, use it.
                 // Note that ticks may be unsorted.
-                if (Ticks != null && Ticks.Count > 0)
+                if (Ticks is { Count: > 0 })
                 {
                     foreach (var tick in Ticks)
                     {
@@ -341,7 +336,7 @@ namespace HandyControl.Controls
             var previous = Minimum;
             var next = Maximum;
 
-            if (Ticks != null && Ticks.Count > 0)
+            if (Ticks is { Count: > 0 })
             {
                 foreach (var tick in Ticks)
                 {
@@ -390,6 +385,7 @@ namespace HandyControl.Controls
                     var start = Math.Max(Minimum, Math.Min(Maximum, snappedValue));
                     if (start > ValueEnd)
                     {
+                        SetCurrentValue(ValueStartProperty, ValueEnd);
                         SetCurrentValue(ValueEndProperty, start);
                         _track.ThumbStart.CancelDrag();
                         _track.ThumbEnd.StartDrag();
@@ -408,6 +404,7 @@ namespace HandyControl.Controls
                     var end = Math.Max(Minimum, Math.Min(Maximum, snappedValue));
                     if (end < ValueStart)
                     {
+                        SetCurrentValue(ValueEndProperty, ValueStart);
                         SetCurrentValue(ValueStartProperty, end);
                         _track.ThumbEnd.CancelDrag();
                         _track.ThumbStart.StartDrag();
@@ -427,7 +424,7 @@ namespace HandyControl.Controls
         {
             // Show AutoToolTip if needed.
 
-            if (!(e.OriginalSource is RangeThumb thumb)) return;
+            if (e.OriginalSource is not RangeThumb thumb) return;
             _thumbCurrent = thumb;
             _originThumbPoint = Mouse.GetPosition(_thumbCurrent);
             _thumbCurrent.StartDrag();
@@ -450,15 +447,12 @@ namespace HandyControl.Controls
 
         private void OnThumbDragStarted(ToolTip toolTip, bool isStart)
         {
-            if (toolTip == null)
+            toolTip ??= new ToolTip
             {
-                toolTip = new ToolTip
-                {
-                    Placement = PlacementMode.Custom,
-                    PlacementTarget = isStart ? _track.ThumbStart : _track.ThumbEnd,
-                    CustomPopupPlacementCallback = AutoToolTipCustomPlacementCallback
-                };
-            }
+                Placement = PlacementMode.Custom,
+                PlacementTarget = isStart ? _track.ThumbStart : _track.ThumbEnd,
+                CustomPopupPlacementCallback = AutoToolTipCustomPlacementCallback
+            };
 
             if (isStart)
             {
@@ -523,7 +517,7 @@ namespace HandyControl.Controls
 
         private string GetAutoToolTipNumber(bool isStart)
         {
-            var format = (NumberFormatInfo)NumberFormatInfo.CurrentInfo.Clone();
+            var format = (NumberFormatInfo) NumberFormatInfo.CurrentInfo.Clone();
             format.NumberDecimalDigits = AutoToolTipPrecision;
             return isStart ? ValueStart.ToString("N", format) : ValueEnd.ToString("N", format);
         }
@@ -532,7 +526,7 @@ namespace HandyControl.Controls
 
         protected virtual void OnThumbDragDelta(DragDeltaEventArgs e)
         {
-            if (!(e.OriginalSource is Thumb thumb)) return;
+            if (e.OriginalSource is not Thumb thumb) return;
             var isStart = thumb.Equals(_track.ThumbStart);
             if (!isStart)
             {
@@ -580,7 +574,7 @@ namespace HandyControl.Controls
         {
             // Show AutoToolTip if needed.
 
-            if (!(e.OriginalSource is Thumb thumb) || AutoToolTipPlacement == AutoToolTipPlacement.None)
+            if (e.OriginalSource is not Thumb thumb || AutoToolTipPlacement == AutoToolTipPlacement.None)
             {
                 return;
             }
@@ -604,7 +598,7 @@ namespace HandyControl.Controls
         {
             if (e.ChangedButton != MouseButton.Left) return;
 
-            var slider = (RangeSlider)sender;
+            var slider = (RangeSlider) sender;
 
             // When someone click on the Slider's part, and it's not focusable
             // Slider need to take the focus in order to process keyboard correctly
@@ -630,7 +624,6 @@ namespace HandyControl.Controls
         {
             if (_thumbCurrent == null) return;
             if (e.MouseDevice.LeftButton != MouseButtonState.Pressed) return;
-
             if (!_thumbCurrent.IsDragging) return;
 
             var thumbCoordPosition = e.GetPosition(_thumbCurrent);

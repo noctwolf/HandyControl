@@ -25,20 +25,19 @@ namespace HandyControl.Controls
 
         private TranslateTransform _translateTransform;
 
-        public WaveProgressBar() => Loaded += (s, e) => UpdateWave(Value);
-
         static WaveProgressBar()
         {
-            FocusableProperty.OverrideMetadata(typeof(WaveProgressBar),
-                new FrameworkPropertyMetadata(ValueBoxes.FalseBox));
-            MaximumProperty.OverrideMetadata(typeof(WaveProgressBar),
-                new FrameworkPropertyMetadata(ValueBoxes.Double100Box));
+            FocusableProperty.OverrideMetadata(typeof(WaveProgressBar), new FrameworkPropertyMetadata(ValueBoxes.FalseBox));
+            MaximumProperty.OverrideMetadata(typeof(WaveProgressBar), new FrameworkPropertyMetadata(ValueBoxes.Double100Box));
         }
+
+        protected override void OnMinimumChanged(double oldMinimum, double newMinimum) => UpdateWave(Value);
+
+        protected override void OnMaximumChanged(double oldMaximum, double newMaximum) => UpdateWave(Value);
 
         protected override void OnValueChanged(double oldValue, double newValue)
         {
             base.OnValueChanged(oldValue, newValue);
-
             UpdateWave(newValue);
         }
 
@@ -59,15 +58,19 @@ namespace HandyControl.Controls
 
             if (_waveElement != null && clipElement != null)
             {
+                var clipElementHeight = clipElement.Height;
+
                 _translateTransform = new TranslateTransform
                 {
-                    Y = clipElement.Height
+                    Y = clipElementHeight
                 };
-                _translateTransformYRange = clipElement.Height - TranslateTransformMinY;
+                _translateTransformYRange = clipElementHeight - TranslateTransformMinY;
                 _waveElement.RenderTransform = new TransformGroup
                 {
-                    Children = {_translateTransform}
+                    Children = { _translateTransform }
                 };
+
+                UpdateWave(Value);
             }
         }
 
@@ -76,7 +79,7 @@ namespace HandyControl.Controls
 
         public string Text
         {
-            get => (string)GetValue(TextProperty);
+            get => (string) GetValue(TextProperty);
             set => SetValue(TextProperty, value);
         }
 
@@ -85,8 +88,8 @@ namespace HandyControl.Controls
 
         public bool ShowText
         {
-            get => (bool)GetValue(ShowTextProperty);
-            set => SetValue(ShowTextProperty, value);
+            get => (bool) GetValue(ShowTextProperty);
+            set => SetValue(ShowTextProperty, ValueBoxes.BooleanBox(value));
         }
 
         public static readonly DependencyProperty WaveFillProperty = DependencyProperty.Register(

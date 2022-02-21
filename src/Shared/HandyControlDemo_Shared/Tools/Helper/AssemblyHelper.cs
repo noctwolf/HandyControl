@@ -7,7 +7,7 @@ namespace HandyControlDemo.Tools
     {
         private static readonly string NameSpaceStr = typeof(AssemblyHelper).Assembly.GetName().Name;
 
-        private static readonly Dictionary<string, object> CacheDic = new Dictionary<string, object>();
+        private static readonly Dictionary<string, object> CacheDic = new();
 
         public static void Register(string name, object instance) => CacheDic[name] = instance;
 
@@ -25,7 +25,6 @@ namespace HandyControlDemo.Tools
         {
             try
             {
-
                 var type = Type.GetType($"{NameSpaceStr}.{className}");
                 return type == null ? null : Activator.CreateInstance(type);
             }

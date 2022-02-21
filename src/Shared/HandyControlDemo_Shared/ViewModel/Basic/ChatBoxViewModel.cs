@@ -7,11 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
-#if netle40
 using GalaSoft.MvvmLight.Command;
-#else
-using GalaSoft.MvvmLight.CommandWpf;
-#endif
 using GalaSoft.MvvmLight.Messaging;
 using HandyControl.Controls;
 using HandyControl.Data;
@@ -28,7 +24,7 @@ namespace HandyControlDemo.ViewModel
 
         private readonly string _id = Guid.NewGuid().ToString();
 
-        private readonly Stopwatch _stopwatch = new Lazy<Stopwatch>(() => new Stopwatch()).Value;
+        private readonly Stopwatch _stopwatch = new();
 
         public ChatBoxViewModel()
         {
@@ -47,17 +43,16 @@ namespace HandyControlDemo.ViewModel
         public string ChatString
         {
             get => _chatString;
-#if netle40
+#if NET40
             set => Set(nameof(ChatString), ref _chatString, value);
 #else
             set => Set(ref _chatString, value);
 #endif
         }
 
-        public ObservableCollection<ChatInfoModel> ChatInfos { get; set; } = new ObservableCollection<ChatInfoModel>();
+        public ObservableCollection<ChatInfoModel> ChatInfos { get; set; } = new();
 
-        public RelayCommand<KeyEventArgs> SendStringCmd => new Lazy<RelayCommand<KeyEventArgs>>(() =>
-            new RelayCommand<KeyEventArgs>(SendString)).Value;
+        public RelayCommand<KeyEventArgs> SendStringCmd => new(SendString);
 
         private void SendString(KeyEventArgs e)
         {
@@ -77,18 +72,17 @@ namespace HandyControlDemo.ViewModel
             }
         }
 
-        public RelayCommand<RoutedEventArgs> ReadMessageCmd => new Lazy<RelayCommand<RoutedEventArgs>>(() =>
-            new RelayCommand<RoutedEventArgs>(ReadMessage)).Value;
+        public RelayCommand<RoutedEventArgs> ReadMessageCmd => new(ReadMessage);
 
         private void ReadMessage(RoutedEventArgs e)
         {
-            if (e.OriginalSource is FrameworkElement element && element.Tag is ChatInfoModel info)
+            if (e.OriginalSource is FrameworkElement { Tag: ChatInfoModel info })
             {
                 if (info.Type == ChatMessageType.Image)
                 {
                     new ImageBrowser(new Uri(info.Enclosure.ToString()))
                     {
-                        Owner = VisualHelper.GetActiveWindow()
+                        Owner = WindowHelper.GetActiveWindow()
                     }.Show();
                 }
                 else if (info.Type == ChatMessageType.Audio)
@@ -99,24 +93,22 @@ namespace HandyControlDemo.ViewModel
             }
         }
 
-        public RelayCommand StartRecordCmd => new Lazy<RelayCommand>(() =>
-            new RelayCommand(StartRecord)).Value;
+        public RelayCommand StartRecordCmd => new(StartRecord);
 
         private void StartRecord()
         {
-            ExternDllHelper.MciSendString("set wave bitpersample 8", "", 0, 0);
-            ExternDllHelper.MciSendString("set wave samplespersec 20000", "", 0, 0);
-            ExternDllHelper.MciSendString("set wave channels 2", "", 0, 0);
-            ExternDllHelper.MciSendString("set wave format tag pcm", "", 0, 0);
-            ExternDllHelper.MciSendString("open new type WAVEAudio alias movie", "", 0, 0);
-            ExternDllHelper.MciSendString("record movie", "", 0, 0);
+            Win32Helper.MciSendString("set wave bitpersample 8", "", 0, 0);
+            Win32Helper.MciSendString("set wave samplespersec 20000", "", 0, 0);
+            Win32Helper.MciSendString("set wave channels 2", "", 0, 0);
+            Win32Helper.MciSendString("set wave format tag pcm", "", 0, 0);
+            Win32Helper.MciSendString("open new type WAVEAudio alias movie", "", 0, 0);
+            Win32Helper.MciSendString("record movie", "", 0, 0);
 
             _stopwatch.Reset();
             _stopwatch.Start();
         }
 
-        public RelayCommand StopRecordCmd => new Lazy<RelayCommand>(() =>
-            new RelayCommand(StopRecord)).Value;
+        public RelayCommand StopRecordCmd => new(StopRecord);
 
         private void StopRecord()
         {
@@ -134,9 +126,10 @@ namespace HandyControlDemo.ViewModel
             }
 
             var cachePath = $"{AudioCachePath}\\{Guid.NewGuid().ToString()}";
-            ExternDllHelper.MciSendString("stop movie", "", 0, 0);
-            ExternDllHelper.MciSendString($"save movie {cachePath}", "", 0, 0);
-            ExternDllHelper.MciSendString("close movie", "", 0, 0);
+            var cachePathWithQuotes = $"\"{cachePath}\"";
+            Win32Helper.MciSendString("stop movie", "", 0, 0);
+            Win32Helper.MciSendString($"save movie {cachePathWithQuotes}", "", 0, 0);
+            Win32Helper.MciSendString("close movie", "", 0, 0);
 
             _stopwatch.Stop();
 
@@ -152,8 +145,7 @@ namespace HandyControlDemo.ViewModel
             Messenger.Default.Send(info, MessageToken.SendChatMessage);
         }
 
-        public RelayCommand OpenImageCmd => new Lazy<RelayCommand>(() =>
-            new RelayCommand(OpenImage)).Value;
+        public RelayCommand OpenImageCmd => new(OpenImage);
 
         private void OpenImage()
         {

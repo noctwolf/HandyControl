@@ -1,28 +1,24 @@
-﻿using System;
-using System.Windows;
-using GalaSoft.MvvmLight;
+﻿using System.Windows;
+using GalaSoft.MvvmLight.Command;
 using HandyControl.Controls;
 using HandyControl.Data;
-#if netle40
-using GalaSoft.MvvmLight.Command;
-#else
-using GalaSoft.MvvmLight.CommandWpf;
-#endif
+using HandyControlDemo.Data;
+using HandyControlDemo.Service;
 
 namespace HandyControlDemo.ViewModel
 {
-    public class TabControlDemoViewModel : ViewModelBase
+    public class TabControlDemoViewModel : DemoViewModelBase<TabControlDemoModel>
     {
-        public RelayCommand<CancelRoutedEventArgs> ClosingCmd => new Lazy<RelayCommand<CancelRoutedEventArgs>>(() =>
-            new RelayCommand<CancelRoutedEventArgs>(Closing)).Value;
+        public TabControlDemoViewModel(DataService dataService) => DataList = dataService.GetTabControlDemoDataList();
+
+        public RelayCommand<CancelRoutedEventArgs> ClosingCmd => new(Closing);
 
         private void Closing(CancelRoutedEventArgs args)
         {
             Growl.Info($"{(args.OriginalSource as TabItem)?.Header} Closing");
         }
 
-        public RelayCommand<RoutedEventArgs> ClosedCmd => new Lazy<RelayCommand<RoutedEventArgs>>(() =>
-            new RelayCommand<RoutedEventArgs>(Closed)).Value;
+        public RelayCommand<RoutedEventArgs> ClosedCmd => new(Closed);
 
         private void Closed(RoutedEventArgs args)
         {

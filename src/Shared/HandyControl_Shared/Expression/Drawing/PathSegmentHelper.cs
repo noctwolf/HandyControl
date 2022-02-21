@@ -21,19 +21,13 @@ namespace HandyControl.Expression.Drawing
                 arcSegment.Size.Height, arcSegment.RotationAngle, arcSegment.IsLargeArc,
                 arcSegment.SweepDirection == SweepDirection.Clockwise, arcSegment.Point.X, arcSegment.Point.Y,
                 out var pointArray, out var num);
-            switch (num)
+            return num switch
             {
-                case -1:
-                    return null;
-
-                case 0:
-                    return CreateLineSegment(arcSegment.Point, isStroked);
-
-                case 1:
-                    return CreateBezierSegment(pointArray[0], pointArray[1], pointArray[2], isStroked);
-            }
-
-            return CreatePolyBezierSegment(pointArray, 0, num * 3, isStroked);
+                -1 => null,
+                0 => CreateLineSegment(arcSegment.Point, isStroked),
+                1 => CreateBezierSegment(pointArray[0], pointArray[1], pointArray[2], isStroked),
+                _ => CreatePolyBezierSegment(pointArray, 0, num * 3, isStroked)
+            };
         }
 
         public static ArcSegment CreateArcSegment(Point point, Size size, bool isLargeArc, bool clockwise,
@@ -243,7 +237,7 @@ namespace HandyControl.Expression.Drawing
 
             public static PathSegmentImplementation Create(ArcSegment source)
             {
-                if (source != null) return new ArcSegmentImplementation {_segment = source};
+                if (source != null) return new ArcSegmentImplementation { _segment = source };
                 return null;
             }
 
@@ -454,13 +448,13 @@ namespace HandyControl.Expression.Drawing
 
             public static PathSegmentImplementation Create(BezierSegment source)
             {
-                if (source != null) return new BezierSegmentImplementation {_segment = source};
+                if (source != null) return new BezierSegmentImplementation { _segment = source };
                 return null;
             }
 
             public override void Flatten(IList<Point> points, double tolerance)
             {
-                Point[] controlPoints = {Start, _segment.Point1, _segment.Point2, _segment.Point3};
+                Point[] controlPoints = { Start, _segment.Point1, _segment.Point2, _segment.Point3 };
                 var resultPolyline = new List<Point>();
                 BezierCurveFlattener.FlattenCubic(controlPoints, tolerance, resultPolyline, true);
                 points.AddRange(resultPolyline);
@@ -493,7 +487,7 @@ namespace HandyControl.Expression.Drawing
 
             public static PathSegmentImplementation Create(LineSegment source)
             {
-                if (source != null) return new LineSegmentImplementation {_segment = source};
+                if (source != null) return new LineSegmentImplementation { _segment = source };
                 return null;
             }
 
@@ -538,7 +532,7 @@ namespace HandyControl.Expression.Drawing
                         PolyQuadraticBezierSegmentImplementation.Create(segment as PolyQuadraticBezierSegment)
                     ) == null)
                     throw new NotSupportedException(string.Format(CultureInfo.CurrentCulture,
-                        ExceptionStringTable.TypeNotSupported, new object[] {segment.GetType().FullName}));
+                        ExceptionStringTable.TypeNotSupported, new object[] { segment.GetType().FullName }));
                 return implementation;
             }
 
@@ -569,7 +563,7 @@ namespace HandyControl.Expression.Drawing
 
             public static PathSegmentImplementation Create(PolyBezierSegment source)
             {
-                if (source != null) return new PolyBezierSegmentImplementation {_segment = source};
+                if (source != null) return new PolyBezierSegmentImplementation { _segment = source };
                 return null;
             }
 
@@ -579,7 +573,7 @@ namespace HandyControl.Expression.Drawing
                 var num = _segment.Points.Count / 3 * 3;
                 for (var i = 0; i < num; i += 3)
                 {
-                    Point[] controlPoints = {start, _segment.Points[i], _segment.Points[i + 1], _segment.Points[i + 2]};
+                    Point[] controlPoints = { start, _segment.Points[i], _segment.Points[i + 1], _segment.Points[i + 2] };
                     var resultPolyline = new List<Point>();
                     BezierCurveFlattener.FlattenCubic(controlPoints, tolerance, resultPolyline, true);
                     points.AddRange(resultPolyline);
@@ -626,7 +620,7 @@ namespace HandyControl.Expression.Drawing
 
             public static PathSegmentImplementation Create(PolyLineSegment source)
             {
-                if (source != null) return new PolyLineSegmentImplementation {_segment = source};
+                if (source != null) return new PolyLineSegmentImplementation { _segment = source };
                 return null;
             }
 
@@ -670,7 +664,7 @@ namespace HandyControl.Expression.Drawing
 
             public static PathSegmentImplementation Create(PolyQuadraticBezierSegment source)
             {
-                if (source != null) return new PolyQuadraticBezierSegmentImplementation {_segment = source};
+                if (source != null) return new PolyQuadraticBezierSegmentImplementation { _segment = source };
                 return null;
             }
 
@@ -680,7 +674,7 @@ namespace HandyControl.Expression.Drawing
                 var num = _segment.Points.Count / 2 * 2;
                 for (var i = 0; i < num; i += 2)
                 {
-                    Point[] controlPoints = {start, _segment.Points[i], _segment.Points[i + 1]};
+                    Point[] controlPoints = { start, _segment.Points[i], _segment.Points[i + 1] };
                     var resultPolyline = new List<Point>();
                     BezierCurveFlattener.FlattenQuadratic(controlPoints, tolerance, resultPolyline, true);
                     points.AddRange(resultPolyline);
@@ -728,13 +722,13 @@ namespace HandyControl.Expression.Drawing
 
             public static PathSegmentImplementation Create(QuadraticBezierSegment source)
             {
-                if (source != null) return new QuadraticBezierSegmentImplementation {_segment = source};
+                if (source != null) return new QuadraticBezierSegmentImplementation { _segment = source };
                 return null;
             }
 
             public override void Flatten(IList<Point> points, double tolerance)
             {
-                Point[] controlPoints = {Start, _segment.Point1, _segment.Point2};
+                Point[] controlPoints = { Start, _segment.Point1, _segment.Point2 };
                 var resultPolyline = new List<Point>();
                 BezierCurveFlattener.FlattenQuadratic(controlPoints, tolerance, resultPolyline, true);
                 points.AddRange(resultPolyline);

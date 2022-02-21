@@ -1,11 +1,6 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Windows.Controls;
-#if netle40
 using GalaSoft.MvvmLight.Command;
-#else
-using GalaSoft.MvvmLight.CommandWpf;
-# endif
 using HandyControl.Controls;
 using HandyControlDemo.Data;
 using HandyControlDemo.Service;
@@ -16,15 +11,27 @@ namespace HandyControlDemo.ViewModel
     {
         public StepBarDemoViewModel(DataService dataService) => DataList = dataService.GetStepBarDemoDataList();
 
+        private int _stepIndex;
+
+        public int StepIndex
+        {
+            get => _stepIndex;
+#if NET40
+            set => Set(nameof(StepIndex), ref _stepIndex, value);
+#else
+            set => Set(ref _stepIndex, value);
+#endif
+        }
+
         /// <summary>
         ///     下一步
         /// </summary>
-        public RelayCommand<Panel> NextCmd => new Lazy<RelayCommand<Panel>>(() => new RelayCommand<Panel>(Next)).Value;
+        public RelayCommand<Panel> NextCmd => new(Next);
 
         /// <summary>
         ///     上一步
         /// </summary>
-        public RelayCommand<Panel> PrevCmd => new Lazy<RelayCommand<Panel>>(() => new RelayCommand<Panel>(Prev)).Value;
+        public RelayCommand<Panel> PrevCmd => new(Prev);
 
         private void Next(Panel panel)
         {

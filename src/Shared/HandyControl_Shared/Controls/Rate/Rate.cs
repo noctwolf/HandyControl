@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -31,7 +32,19 @@ namespace HandyControl.Controls
             "DefaultValue", typeof(double), typeof(Rate), new PropertyMetadata(ValueBoxes.Double0Box));
 
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
-            "Value", typeof(double), typeof(Rate), new PropertyMetadata(ValueBoxes.Double0Box));
+            "Value", typeof(double), typeof(Rate), new PropertyMetadata(ValueBoxes.Double0Box, OnValueChanged));
+
+        private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) =>
+            ((Rate) d).OnValueChanged(new FunctionEventArgs<double>(ValueChangedEvent, d)
+            {
+                Info = (double) e.NewValue
+            });
+
+        protected virtual void OnValueChanged(FunctionEventArgs<double> e)
+        {
+            RaiseEvent(e);
+            UpdateItems();
+        }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(string), typeof(Rate), new PropertyMetadata(default(string)));
@@ -44,6 +57,22 @@ namespace HandyControl.Controls
 
         private bool _isLoaded;
 
+        private bool _updateItems;
+
+        #region Public Events
+
+        public static readonly RoutedEvent ValueChangedEvent =
+            EventManager.RegisterRoutedEvent("ValueChanged", RoutingStrategy.Bubble,
+                typeof(EventHandler<FunctionEventArgs<double>>), typeof(Rate));
+
+        public event EventHandler<FunctionEventArgs<double>> ValueChanged
+        {
+            add => AddHandler(ValueChangedEvent, value);
+            remove => RemoveHandler(ValueChangedEvent, value);
+        }
+
+        #endregion Public Events
+
         public Rate()
         {
             AddHandler(RateItem.SelectedChangedEvent, new RoutedEventHandler(RateItemSelectedChanged));
@@ -52,14 +81,20 @@ namespace HandyControl.Controls
             Loaded += (s, e) =>
             {
                 if (DesignerHelper.IsInDesignMode) return;
+
+                _updateItems = false;
+                OnApplyTemplateInternal();
+                _updateItems = true;
+                UpdateItems();
+
                 if (_isLoaded) return;
                 _isLoaded = true;
+
                 if (Value <= 0)
                 {
                     if (DefaultValue > 0)
                     {
                         Value = DefaultValue;
-                        UpdateItems();
                     }
                 }
                 else
@@ -72,13 +107,13 @@ namespace HandyControl.Controls
         public bool AllowHalf
         {
             get => (bool) GetValue(AllowHalfProperty);
-            set => SetValue(AllowHalfProperty, value);
+            set => SetValue(AllowHalfProperty, ValueBoxes.BooleanBox(value));
         }
 
         public bool AllowClear
         {
             get => (bool) GetValue(AllowClearProperty);
-            set => SetValue(AllowClearProperty, value);
+            set => SetValue(AllowClearProperty, ValueBoxes.BooleanBox(value));
         }
 
         public Geometry Icon
@@ -114,20 +149,17 @@ namespace HandyControl.Controls
         public bool ShowText
         {
             get => (bool) GetValue(ShowTextProperty);
-            set => SetValue(ShowTextProperty, value);
+            set => SetValue(ShowTextProperty, ValueBoxes.BooleanBox(value));
         }
 
         public bool IsReadOnly
         {
-            get => (bool)GetValue(IsReadOnlyProperty);
-            set => SetValue(IsReadOnlyProperty, value);
+            get => (bool) GetValue(IsReadOnlyProperty);
+            set => SetValue(IsReadOnlyProperty, ValueBoxes.BooleanBox(value));
         }
 
-        private void RateItemValueChanged(object sender, RoutedEventArgs e)
-        {
-            Value =
-                (from RateItem item in Items where item.IsSelected select item.IsHalf ? 0.5 : 1).Sum();
-        }
+        private void RateItemValueChanged(object sender, RoutedEventArgs e) =>
+            Value = (from RateItem item in Items where item.IsSelected select item.IsHalf ? 0.5 : 1).Sum();
 
         private void RateItemSelectedChanged(object sender, RoutedEventArgs e)
         {
@@ -154,29 +186,40 @@ namespace HandyControl.Controls
             }
         }
 
-        protected override bool IsItemItsOwnContainerOverride(object item)
-        {
-            return item is RateItem;
-        }
+        protected override bool IsItemItsOwnContainerOverride(object item) => item is RateItem;
 
-        protected override DependencyObject GetContainerForItemOverride()
+        protected override DependencyObject GetContainerForItemOverride() => new RateItem();
+
+        private void OnApplyTemplateInternal()
         {
-            return new RateItem();
+            Items.Clear();
+
+            for (var i = 1; i <= Count; i++)
+            {
+                var item = new RateItem
+                {
+                    Index = i,
+                    Width = ItemWidth,
+                    Height = ItemHeight,
+                    Margin = ItemMargin,
+                    AllowHalf = AllowHalf,
+                    AllowClear = AllowClear,
+                    Icon = Icon,
+                    IsReadOnly = IsReadOnly,
+                    Background = Background
+                };
+
+                Items.Add(item);
+            }
         }
 
         public override void OnApplyTemplate()
         {
             if (!_isLoaded)
             {
-                Items.Clear();
-
-                for (var i = 1; i <= Count; i++)
-                {
-                    Items.Add(new RateItem
-                    {
-                        Index = i
-                    });
-                }
+                _updateItems = true;
+                OnApplyTemplateInternal();
+                _updateItems = false;
             }
 
             base.OnApplyTemplate();
@@ -185,13 +228,12 @@ namespace HandyControl.Controls
         protected override void OnMouseLeave(MouseEventArgs e)
         {
             base.OnMouseLeave(e);
-
             UpdateItems();
         }
 
         protected override void UpdateItems()
         {
-            if (!_isLoaded) return;
+            if (!_isLoaded || !_updateItems) return;
             var count = (int) Value;
 
             for (var i = 0; i < count; i++)
@@ -224,9 +266,6 @@ namespace HandyControl.Controls
             }
         }
 
-        public void Reset()
-        {
-            Value = DefaultValue;
-        }
+        public void Reset() => Value = DefaultValue;
     }
 }

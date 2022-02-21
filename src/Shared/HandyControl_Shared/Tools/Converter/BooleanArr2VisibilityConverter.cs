@@ -15,7 +15,7 @@ namespace HandyControl.Tools.Converter
             {
                 return Visibility.Collapsed;
             }
-            
+
             var arr = new List<bool>();
             foreach (var item in values)
             {
@@ -33,7 +33,7 @@ namespace HandyControl.Tools.Converter
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

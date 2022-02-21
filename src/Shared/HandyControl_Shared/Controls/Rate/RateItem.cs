@@ -46,19 +46,25 @@ namespace HandyControl.Controls
 
         public RateItem()
         {
-            Loaded += (s, e) => _isLoaded = true;
+            Loaded += (s, e) =>
+            {
+                if (_isLoaded) return;
+                _isLoaded = true;
+
+                OnApplyTemplate();
+            };
         }
 
         public bool AllowClear
         {
             get => (bool) GetValue(AllowClearProperty);
-            set => SetValue(AllowClearProperty, value);
+            set => SetValue(AllowClearProperty, ValueBoxes.BooleanBox(value));
         }
 
         public bool AllowHalf
         {
             get => (bool) GetValue(AllowHalfProperty);
-            set => SetValue(AllowHalfProperty, value);
+            set => SetValue(AllowHalfProperty, ValueBoxes.BooleanBox(value));
         }
 
         public Geometry Icon
@@ -70,13 +76,13 @@ namespace HandyControl.Controls
         internal bool IsSelected
         {
             get => (bool) GetValue(IsSelectedProperty);
-            set => SetValue(IsSelectedProperty, value);
+            set => SetValue(IsSelectedProperty, ValueBoxes.BooleanBox(value));
         }
 
         public bool IsReadOnly
         {
-            get => (bool)GetValue(IsReadOnlyProperty);
-            set => SetValue(IsReadOnlyProperty, value);
+            get => (bool) GetValue(IsReadOnlyProperty);
+            set => SetValue(IsReadOnlyProperty, ValueBoxes.BooleanBox(value));
         }
 
         internal bool IsHalf
@@ -87,7 +93,7 @@ namespace HandyControl.Controls
                 if (_isHalf == value) return;
                 _isHalf = value;
                 if (_icon == null) return;
-                _icon.Width = value ? ActualWidth / 2 : ActualWidth;
+                _icon.Width = value ? Width / 2 : Width;
             }
         }
 
@@ -134,7 +140,7 @@ namespace HandyControl.Controls
             if (IsReadOnly) return;
             if (!AllowHalf) return;
             var p = e.GetPosition(this);
-            IsHalf = p.X < ActualWidth / 2;
+            IsHalf = p.X < Width / 2;
         }
 
         public override void OnApplyTemplate()
@@ -147,7 +153,7 @@ namespace HandyControl.Controls
             {
                 if (_icon == null) return;
                 _icon.Show(IsSelected);
-                _icon.Width = IsHalf ? ActualWidth / 2 : ActualWidth;
+                _icon.Width = IsHalf ? Width / 2 : Width;
             }
         }
 
@@ -157,7 +163,7 @@ namespace HandyControl.Controls
             if (IsReadOnly) return;
             _isSentValue = false;
             IsSelected = true;
-            RaiseEvent(new RoutedEventArgs(SelectedChangedEvent) {Source = this});
+            RaiseEvent(new RoutedEventArgs(SelectedChangedEvent) { Source = this });
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -186,7 +192,7 @@ namespace HandyControl.Controls
                     {
                         if (!_isSentValue)
                         {
-                            RaiseEvent(new RoutedEventArgs(ValueChangedEvent) {Source = this});
+                            RaiseEvent(new RoutedEventArgs(ValueChangedEvent) { Source = this });
                             _isMouseLeftButtonDown = false;
                             _isSentValue = true;
                             return;
@@ -202,12 +208,12 @@ namespace HandyControl.Controls
                         if (AllowHalf)
                         {
                             var p = e.GetPosition(this);
-                            IsHalf = p.X < ActualWidth / 2;
+                            IsHalf = p.X < Width / 2;
                         }
                     }
                 }
 
-                RaiseEvent(new RoutedEventArgs(ValueChangedEvent) {Source = this});
+                RaiseEvent(new RoutedEventArgs(ValueChangedEvent) { Source = this });
                 _isMouseLeftButtonDown = false;
             }
         }

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-#if netle40
 using GalaSoft.MvvmLight.Command;
-#else
-using GalaSoft.MvvmLight.CommandWpf;
-# endif
 using HandyControl.Data;
 using HandyControlDemo.Data;
 using HandyControlDemo.Service;
@@ -30,7 +25,7 @@ namespace HandyControlDemo.ViewModel
         public int PageIndex
         {
             get => _pageIndex;
-#if netle40
+#if NET40
             set => Set(nameof(PageIndex), ref _pageIndex, value);
 #else
             set => Set(ref _pageIndex, value);
@@ -39,16 +34,14 @@ namespace HandyControlDemo.ViewModel
 
         public PaginationDemoViewModel(DataService dataService)
         {
-            _totalDataList = dataService.GetDemoDataList(10);
+            _totalDataList = dataService.GetDemoDataList(100);
             DataList = _totalDataList.Take(10).ToList();
         }
 
         /// <summary>
         ///     页码改变命令
         /// </summary>
-        public RelayCommand<FunctionEventArgs<int>> PageUpdatedCmd =>
-            new Lazy<RelayCommand<FunctionEventArgs<int>>>(() =>
-                new RelayCommand<FunctionEventArgs<int>>(PageUpdated)).Value;
+        public RelayCommand<FunctionEventArgs<int>> PageUpdatedCmd => new(PageUpdated);
 
         /// <summary>
         ///     页码改变

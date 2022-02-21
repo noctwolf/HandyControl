@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Windows;
@@ -9,6 +10,8 @@ using HandyControl.Tools.Interop;
 
 namespace HandyControl.Tools
 {
+    [SuppressMessage("ReSharper", "ArrangeRedundantParentheses")]
+    [SuppressMessage("ReSharper", "IntVariableOverflowInUncheckedContext")]
     internal static class IconHelper
     {
         private static Size SmallIconSize;
@@ -37,7 +40,7 @@ namespace HandyControl.Tools
             {
                 bf = GetBestMatch(bf.Decoder.Frames, size);
 
-                asGoodAsItGets = bf.Decoder is IconBitmapDecoder || bf.PixelWidth == (int)size.Width && bf.PixelHeight == (int)size.Height;
+                asGoodAsItGets = bf.Decoder is IconBitmapDecoder || bf.PixelWidth == (int) size.Width && bf.PixelHeight == (int) size.Height;
 
                 image = bf;
             }
@@ -79,13 +82,13 @@ namespace HandyControl.Tools
 
             try
             {
-                var bi = new BITMAPINFO(width, -height, 32)
+                var bi = new InteropValues.BITMAPINFO(width, -height, 32)
                 {
-                    bmiHeader_biCompression = NativeMethods.BI_RGB
+                    biCompression = InteropValues.BI_RGB
                 };
 
                 var bits = IntPtr.Zero;
-                colorBitmap = UnsafeNativeMethods.CreateDIBSection(new HandleRef(null, IntPtr.Zero), ref bi, NativeMethods.DIB_RGB_COLORS, ref bits, null, 0);
+                colorBitmap = InteropMethods.CreateDIBSection(new HandleRef(null, IntPtr.Zero), ref bi, InteropValues.DIB_RGB_COLORS, ref bits, null, 0);
 
                 if (colorBitmap.IsInvalid || bits == IntPtr.Zero)
                 {
@@ -95,13 +98,13 @@ namespace HandyControl.Tools
                 Marshal.Copy(colorArray, 0, bits, colorArray.Length);
                 var maskArray = GenerateMaskArray(width, height, colorArray);
 
-                maskBitmap = UnsafeNativeMethods.CreateBitmap(width, height, 1, 1, maskArray);
+                maskBitmap = InteropMethods.CreateBitmap(width, height, 1, 1, maskArray);
                 if (maskBitmap.IsInvalid)
                 {
                     return IconHandle.GetInvalidIcon();
                 }
 
-                var iconInfo = new ICONINFO
+                var iconInfo = new InteropValues.ICONINFO
                 {
                     fIcon = isIcon,
                     xHotspot = xHotspot,
@@ -110,7 +113,7 @@ namespace HandyControl.Tools
                     hbmColor = colorBitmap
                 };
 
-                return UnsafeNativeMethods.CreateIconIndirect(iconInfo);
+                return InteropMethods.CreateIconIndirect(iconInfo);
             }
             finally
             {
@@ -130,7 +133,7 @@ namespace HandyControl.Tools
                 var hPos = i % width;
                 var vPos = i / width;
                 var byteIndex = hPos / 8;
-                var offsetBit = (byte)(0x80 >> (hPos % 8));
+                var offsetBit = (byte) (0x80 >> (hPos % 8));
 
                 if (colorArray[i * 4 + 3] == 0x00)
                 {
@@ -138,7 +141,7 @@ namespace HandyControl.Tools
                 }
                 else
                 {
-                    bitsMask[byteIndex + bytesPerScanLine * vPos] &= (byte)~offsetBit;
+                    bitsMask[byteIndex + bytesPerScanLine * vPos] &= (byte) ~offsetBit;
                 }
 
                 if (hPos == width - 1 && width == 8)
@@ -153,7 +156,7 @@ namespace HandyControl.Tools
         internal static int AlignToBytes(double original, int nBytesCount)
         {
             var nBitsCount = 8 << (nBytesCount - 1);
-            return ((int)Math.Ceiling(original) + (nBitsCount - 1)) / nBitsCount * nBitsCount;
+            return ((int) Math.Ceiling(original) + (nBitsCount - 1)) / nBitsCount * nBitsCount;
         }
 
         private static BitmapSource GenerateBitmapSource(ImageSource img, Size renderSize)
@@ -183,7 +186,7 @@ namespace HandyControl.Tools
             dc.DrawImage(img, drawingDimensions);
             dc.Close();
 
-            var bmp = new RenderTargetBitmap((int)renderSize.Width, (int)renderSize.Height, 96, 96, PixelFormats.Pbgra32);
+            var bmp = new RenderTargetBitmap((int) renderSize.Width, (int) renderSize.Height, 96, 96, PixelFormats.Pbgra32);
             bmp.Render(dv);
 
             return bmp;
@@ -229,8 +232,8 @@ namespace HandyControl.Tools
         private static int MatchImage(BitmapFrame frame, Size size, int bpp)
         {
             var score = 2 * MyAbs(bpp, SystemBitDepth, false) +
-                        MyAbs(frame.PixelWidth, (int)size.Width, true) +
-                        MyAbs(frame.PixelHeight, (int)size.Height, true);
+                        MyAbs(frame.PixelWidth, (int) size.Width, true) +
+                        MyAbs(frame.PixelHeight, (int) size.Height, true);
 
             return score;
         }
@@ -252,21 +255,21 @@ namespace HandyControl.Tools
         {
             if (SystemBitDepth == 0)
             {
-                var hdcDesktop = new HandleRef(null, UnsafeNativeMethods.GetDC(new HandleRef()));
+                var hdcDesktop = new HandleRef(null, InteropMethods.GetDC(new HandleRef()));
                 try
                 {
-                    var sysBitDepth = UnsafeNativeMethods.GetDeviceCaps(hdcDesktop, NativeMethods.BITSPIXEL);
-                    sysBitDepth *= UnsafeNativeMethods.GetDeviceCaps(hdcDesktop, NativeMethods.PLANES);
- 
+                    var sysBitDepth = InteropMethods.GetDeviceCaps(hdcDesktop, InteropValues.BITSPIXEL);
+                    sysBitDepth *= InteropMethods.GetDeviceCaps(hdcDesktop, InteropValues.PLANES);
+
                     if (sysBitDepth == 8)
                     {
                         sysBitDepth = 4;
                     }
 
-                    var cxSmallIcon = UnsafeNativeMethods.GetSystemMetrics(SM.CXSMICON);
-                    var cySmallIcon = UnsafeNativeMethods.GetSystemMetrics(SM.CYSMICON);
-                    var cxIcon = UnsafeNativeMethods.GetSystemMetrics(SM.CXICON);
-                    var cyIcon = UnsafeNativeMethods.GetSystemMetrics(SM.CYICON);
+                    var cxSmallIcon = InteropMethods.GetSystemMetrics(InteropValues.SM.CXSMICON);
+                    var cySmallIcon = InteropMethods.GetSystemMetrics(InteropValues.SM.CYSMICON);
+                    var cxIcon = InteropMethods.GetSystemMetrics(InteropValues.SM.CXICON);
+                    var cyIcon = InteropMethods.GetSystemMetrics(InteropValues.SM.CYICON);
 
                     SmallIconSize = new Size(cxSmallIcon, cySmallIcon);
                     IconSize = new Size(cxIcon, cyIcon);
@@ -274,7 +277,7 @@ namespace HandyControl.Tools
                 }
                 finally
                 {
-                    UnsafeNativeMethods.ReleaseDC(new HandleRef(), hdcDesktop);
+                    InteropMethods.ReleaseDC(new HandleRef(), hdcDesktop);
                 }
             }
         }
@@ -287,8 +290,8 @@ namespace HandyControl.Tools
 
             SecurityHelper.DemandUIWindowPermission();
 
-            var iconModuleFile = UnsafeNativeMethods.GetModuleFileName(new HandleRef());
-            UnsafeNativeMethods.ExtractIconEx(iconModuleFile, 0, out largeIconHandle, out smallIconHandle, 1);
+            var iconModuleFile = InteropMethods.GetModuleFileName(new HandleRef());
+            InteropMethods.ExtractIconEx(iconModuleFile, 0, out largeIconHandle, out smallIconHandle, 1);
         }
     }
 }

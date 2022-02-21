@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace HandyControl.Tools.Converter
 {
-    public class Boolean2StrConverter : IValueConverter
+    public class Boolean2StringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -26,7 +26,7 @@ namespace HandyControl.Tools.Converter
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

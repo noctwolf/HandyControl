@@ -52,14 +52,16 @@ namespace HandyControl.Controls
                 Info = Text
             });
 
-            if (Command == null) return;
-            if (Command is RoutedCommand command)
+            switch (Command)
             {
-                command.Execute(CommandParameter, CommandTarget);
-            }
-            else
-            {
-                Command.Execute(CommandParameter);
+                case null:
+                    return;
+                case RoutedCommand command:
+                    command.Execute(CommandParameter, CommandTarget);
+                    break;
+                default:
+                    Command.Execute(CommandParameter);
+                    break;
             }
         }
 
@@ -74,8 +76,8 @@ namespace HandyControl.Controls
         /// </summary>
         public bool IsRealTime
         {
-            get => (bool)GetValue(IsRealTimeProperty);
-            set => SetValue(IsRealTimeProperty, value);
+            get => (bool) GetValue(IsRealTimeProperty);
+            set => SetValue(IsRealTimeProperty, ValueBoxes.BooleanBox(value));
         }
 
         public static readonly DependencyProperty CommandProperty = DependencyProperty.Register(
@@ -83,7 +85,7 @@ namespace HandyControl.Controls
 
         private static void OnCommandChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var ctl = (SearchBar)d;
+            var ctl = (SearchBar) d;
             if (e.OldValue is ICommand oldCommand)
             {
                 oldCommand.CanExecuteChanged -= ctl.CanExecuteChanged;
